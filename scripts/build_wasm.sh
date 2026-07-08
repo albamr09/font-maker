@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ -z "$1" ]
   then
     echo "No path to Boost include dir supplied"

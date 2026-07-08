@@ -1,0 +1,42 @@
+FROM silkeh/clang:10
+
+ENV BOOST_INCLUDE_DIR=/opt/local/include
+ENV CMAKE_VERSION=3.16.9
+
+RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+ && sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list \
+ && sed -i '/buster-updates/d' /etc/apt/sources.list \
+ && printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid
+
+RUN apt-get update && apt-get install -y \
+    ninja-build \
+    libfreetype6-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install CMake 3.16.9
+RUN wget -O /tmp/cmake.tar.gz \
+    https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+ && tar -xzf /tmp/cmake.tar.gz -C /opt \
+ && ln -s /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/cmake /usr/local/bin/cmake \
+ && ln -s /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/ctest /usr/local/bin/ctest \
+ && ln -s /opt/cmake-${CMAKE_VERSION}-Linux-x86_64/bin/cpack /usr/local/bin/cpack \
+ && rm /tmp/cmake.tar.gz
+
+# Install Boost 1.73 headers
+RUN wget -O /tmp/boost.tar.gz \
+    https://archives.boost.io/release/1.73.0/source/boost_1_73_0.tar.gz \
+ && mkdir -p "$BOOST_INCLUDE_DIR" \
+ && tar -xzf /tmp/boost.tar.gz \
+      --strip-components=1 \
+      -C "$BOOST_INCLUDE_DIR" \
+      boost_1_73_0/boost \
+ && rm /tmp/boost.tar.gz
+
+WORKDIR /app
+
+COPY sdfglyph ./
+COPY scripts/build_cli.sh ./
+
+RUN chmod +x build_cli.sh && ./build_cli.sh
+
+CMD ["bash"]

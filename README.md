@@ -8,7 +8,23 @@ For an example of using font-maker on the command line to cover as much of Unico
 
 ## Development
 
-### Compile library
+### Compile the web app
+
+Create the image:
+
+```bash
+docker build -f Dockerfile.app -t font-maker --platform linux/amd64 .
+```
+
+Run the web app:
+
+```bash
+docker run --rm -it --platform linux/amd64 -p 5174:5174 font-maker
+```
+
+Now you'll be able to open the web app hosted on `localhost:5174`
+
+### Compile library (WASM)
 
 Create the image:
 
@@ -24,18 +40,16 @@ docker run --rm --platform linux/amd64 -v "$(pwd)/app/public:/app/output" font-m
 
 This generates the `.wasm` and `.js` inside `app/public/`
 
-### Compile app
+### Compile library (CLI)
 
-Create the image:
-
-```bash
-docker build -f Dockerfile.app -t font-maker --platform linux/amd64 .
-```
-
-Run the web app:
+Create the image with the CLI compiled
 
 ```bash
-docker run --rm -it --platform linux/amd64 -p 5174:5174 font-maker
+docker build -f Dockerfile.cli -t font-maker-cli --platform linux/amd64 .
 ```
 
-Now you'll be able to open the web app hosted on `localhost:5174`
+Use the library
+
+```bash
+docker run --rm -it --platform linux/amd64 -v "$(pwd)/fonts:/app/fonts" font-maker-cli
+```
