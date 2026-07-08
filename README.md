@@ -6,47 +6,36 @@ For other prepared fonts, look at [maplibre/demotiles/font](https://github.com/m
 
 For an example of using font-maker on the command line to cover as much of Unicode as possible, see the [protomaps/basemaps-assets](https://github.com/protomaps/basemaps-assets) repository.
 
-## Usage
+## Development
 
-* Go to the web app at [maplibre.org/font-maker/](https://maplibre.org/font-maker/) and select your file.
+### Compile library
 
-* Wait for the progress bar to complete and download your ZIP containing all ranges for the font. 
+Create the image:
 
-## Installation
+```bash
+docker build -f Dockerfile.wasm -t font-maker-wasm --platform linux/amd64 .
+```
 
-You don't need to install anything to create SDF fonts, just use the page above. 
+Compile the library to wasm:
 
-For command line usage and developing, see [CONTRIBUTING.md](CONTRIBUTING.md)
+```bash
+docker run --rm --platform linux/amd64 -v "$(pwd):/app" font-maker-wasm
+```
 
-## Caveats
+This generates the `.wasm` and `.js` inside `app/public/`
 
-If the MapLibre renderer does not find a matching codepoint in the current font, it will skip display of that character.
+### Compile app
 
-See @wipfli's [Text Rendering in MapLibre guide](https://github.com/wipfli/about-text-rendering-in-maplibre) for details on the drawbacks of mapping 1 codepoint to 1 glyph.
+Create the image:
 
-### CJK (Chinese, Japanese, Korean) text
+```bash
+docker build -f Dockerfile.app -t font-maker --platform linux/amd64 .
+```
 
-The `font-maker` demo app has [local ideographs](https://maplibre.org/maplibre-gl-js/docs/examples/local-ideographs/) enabled which is the default for most MapLibre applications. Generated fonts that include CJK ranges will display system default fonts instead of generated fonts.
+Run the web app:
 
-### CTL (Complex Text Layout) scripts
+```bash
+docker run --rm -it --platform linux/amd64 -p 5174:5174 font-maker
+```
 
-Certain scripts cannot be rendered in MapLibre GL, affecting at least these languages:
-
-* Burmese: OSM tag `name:my`
-* Hindi `name:hi`
-* Marathi `name:mr`
-* Gujarati `name:gu`
-* Punjabi `name:pa`, `name:pnb`
-* Assamese `name:as`
-* Bengali `name:bn`
-* Oriya `name:or`
-* Telugu `name:te`
-* Kannada `name:kn`
-* Tamil `name:ta`
-* Malayalam `name:ml`
-
-Labels using these scripts have been excluded from the sample capital cities dataset.
-
-## Discussion
-
-Join the #maplibre slack channel at OSMUS: get an invite at https://slack.openstreetmap.us/
+Now you'll be able to open the web app hosted on `localhost:5174`
