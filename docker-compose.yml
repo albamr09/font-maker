@@ -1,0 +1,45 @@
+services:
+  cli-build:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.cli
+    volumes:
+      - ./sdfglyph:/app/sdfglyph
+      - ./scripts:/app/scripts
+    working_dir: /app
+    command: ./scripts/build_cli.sh
+    tty: true
+
+  cli:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.cli
+    volumes:
+      - ./sdfglyph:/app
+      - ./fonts:/app/fonts
+    working_dir: /app
+    tty: true
+    stdin_open: true
+    entrypoint: /bin/bash
+
+  wasm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.wasm
+    volumes:
+      - ./sdfglyph:/app/sdfglyph
+      - ./scripts:/app/scripts
+      - ./app/public:/app/output
+    working_dir: /app
+    command: ./scripts/build_wasm.sh
+    tty: true
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./app:/app
+      - /app/node_modules

@@ -8,48 +8,34 @@ For an example of using font-maker on the command line to cover as much of Unico
 
 ## Development
 
-### Compile the web app
-
-Create the image:
+To run the **web app**
 
 ```bash
-docker build -f Dockerfile.app -t font-maker --platform linux/amd64 .
-```
-
-Run the web app:
-
-```bash
-docker run --rm -it --platform linux/amd64 -p 5174:5174 font-maker
+docker-compose up app
 ```
 
 Now you'll be able to open the web app hosted on `localhost:5174`
 
-### Compile library (WASM)
-
-Create the image:
+To compile the **library (WASM)**
 
 ```bash
-docker build -f Dockerfile.wasm -t font-maker-wasm --platform linux/amd64 .
-```
-
-Compile the library to WASM:
-
-```bash
-docker run --rm --platform linux/amd64 -v "$(pwd)/app/public:/app/output" font-maker-wasm
+docker-compose run --rm --remove-orphans wasm
 ```
 
 This generates the `.wasm` and `.js` inside `app/public/`
 
-### Compile library (CLI)
-
-Create the image with the CLI compiled
+To compile **library (CLI)**
 
 ```bash
-docker build -f Dockerfile.cli -t font-maker-cli --platform linux/amd64 .
+docker-compose run --rm --remove-orphans cli-build
 ```
 
-Use the library
+Use the CLI inside the container
 
 ```bash
-docker run --rm -it --platform linux/amd64 -v "$(pwd)/fonts:/app/fonts" font-maker-cli
+docker-compose run --rm --remove-orphans cli
+```
+
+```bash
+./font-maker --name "Noto Sans" fonts/$OUTPUT_FOLDER fonts/$FONT_PATH.ttf
 ```

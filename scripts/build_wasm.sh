@@ -1,13 +1,7 @@
 #!/bin/bash
 
-if [ -z "$1" ]
-  then
-    echo "No path to Boost include dir supplied"
-    exit 1
-fi
-
 emcc -I vendor/sdf-glyph-foundry/include/ \
-		 -I $1 \
+		 -I "$BOOST_INCLUDE_DIR" \
 		 -I vendor/protozero/include \
 		 -s USE_FREETYPE=1 \
 		 -s EXPORTED_RUNTIME_METHODS=[ccall] \

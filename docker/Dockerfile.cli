@@ -33,10 +33,3 @@ RUN wget -O /tmp/boost.tar.gz \
  && rm /tmp/boost.tar.gz
 
 WORKDIR /app
-
-COPY sdfglyph ./
-COPY scripts/build_cli.sh ./
-
-RUN chmod +x build_cli.sh && ./build_cli.sh
-
-CMD ["bash"]
