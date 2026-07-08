@@ -3,5 +3,4 @@ Makefile
 CMakeFiles
 CMakeCache.txt
 *.pbf
-app/public/sdfglyph.*
 font-maker
