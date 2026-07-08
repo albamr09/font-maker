@@ -12,4 +12,9 @@ RUN curl -L https://archives.boost.io/release/1.73.0/source/boost_1_73_0.tar.gz 
       boost_1_73_0/boost \
  && rm /tmp/boost.tar.gz
 
+# Prebuild the FreeType port into the emscripten cache at image-build time so the
+# (occasionally flaky) port compile is isolated to a cached layer instead of
+# running on every wasm build.
+RUN embuilder build freetype
+
 WORKDIR /app

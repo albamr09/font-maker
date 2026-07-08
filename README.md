@@ -22,7 +22,10 @@ To compile the **library (WASM)**
 docker-compose run --rm --remove-orphans wasm
 ```
 
-This generates the `.wasm` and `.js` inside `app/public/`
+This generates the `.wasm` and `.js` for both modes inside `app/public/`:
+
+- `sdfglyph.js` / `sdfglyph.wasm` - normal mode
+- `sdfglyph-complex.js` / `sdfglyph-complex.wasm` - complex mode
 
 To compile **library (CLI)**
 
@@ -30,14 +33,28 @@ To compile **library (CLI)**
 docker-compose run --rm --remove-orphans cli-build
 ```
 
+This produces two binaries, `font-maker` and `complex-font-maker`.
+
 Use the CLI inside the container
 
 ```bash
 docker-compose run --rm --remove-orphans cli
 ```
 
-You can convert all your fonts on your local `fonts` folder from inside the container as follows:
+### Normal mode
+
+Convert as many fonts as you want into a single fontstack of unicode-indexed PBFs:
 
 ```bash
 ./font-maker --name "Noto Sans" fonts/$OUTPUT_FOLDER fonts/$FONT_PATH_1.ttf fonts/$FONT_PATH_2.ttf
+```
+
+### Complex mode
+
+For complex scripts, `complex-font-maker` takes exactly two fonts: a base font
+(emitted as unicode-indexed glyphs) and one complex-script font (emitted as
+glyph-indexed glyphs, offset by `0x10000`):
+
+```bash
+./complex-font-maker fonts/$OUTPUT_FOLDER fonts/$BASE_FONT.ttf fonts/$COMPLEX_FONT.ttf
 ```

@@ -42,6 +42,31 @@
     }
 }
 
+.ModeToggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+
+    button {
+        flex: 1;
+        padding: calc(var(--spacing) * 2);
+        border: none;
+        background: transparent;
+        color: var(--color);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color var(--transition), color var(--transition);
+
+        &:is([data-active=true]) {
+            background-color: var(--primary);
+            color: var(--primary-contrast, #fff);
+        }
+    }
+}
+
 .SectionWrapper {
     &:not(:last-child) {
         margin-bottom: calc(var(--spacing) * 6);

@@ -26,7 +26,7 @@ export async function exampleToFontStackTreeItem(example: Example): Promise<Font
 }
 
 export function isStackConverted(stack: FontFileTreeItem) {
-    return stack.data.glyphs?.length === 256;
+    return !!stack.data.complete;
 }
 
 export function resetFontStack(stack: FontFileTreeItem): FontFileTreeItem {
@@ -34,7 +34,7 @@ export function resetFontStack(stack: FontFileTreeItem): FontFileTreeItem {
         flattenTree([stack])
             .map(item => ({
                 ...item,
-                data: { ...item.data, stackName: undefined, glyphs: undefined },
+                data: { ...item.data, stackName: undefined, glyphs: undefined, complete: false },
             })),
     );
     return cleared;

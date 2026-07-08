@@ -1,5 +1,29 @@
 export const DEFAULT_FONT = 'Noto Sans Regular';
 
+export interface ComplexFont {
+    file: string; // path under public/
+    name: string; // output fontstack / folder name
+}
+
+// The base (unicode-indexed) font paired with every complex-script font.
+export const COMPLEX_BASE_FONT: ComplexFont = {
+    file: 'complex/NotoSans-Regular.ttf',
+    name: 'Noto Sans',
+};
+
+// One pbf set is generated per entry, pairing the base font above with each of
+// these complex-script fonts. Files live in app/public/complex/.
+export const COMPLEX_FONTS: ComplexFont[] = [
+    { file: 'complex/NotoSansBengali-Regular.ttf', name: 'Noto Sans Bengali' },
+    { file: 'complex/NotoSansDevanagari-Regular.ttf', name: 'Noto Sans Devanagari' },
+    { file: 'complex/NotoSansGujarati-Regular.ttf', name: 'Noto Sans Gujarati' },
+    { file: 'complex/NotoSansKannada-Regular.ttf', name: 'Noto Sans Kannada' },
+    { file: 'complex/NotoSansMalayalam-Regular.ttf', name: 'Noto Sans Malayalam' },
+    { file: 'complex/NotoSansMyanmar-Regular.ttf', name: 'Noto Sans Myanmar' },
+    { file: 'complex/NotoSansTamil-Regular.ttf', name: 'Noto Sans Tamil' },
+    { file: 'complex/NotoSansTelugu-Regular.ttf', name: 'Noto Sans Telugu' },
+];
+
 export const EXAMPLES = [
     {
         name: 'Font stack "Barlow Regular"',

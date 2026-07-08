@@ -82,4 +82,6 @@ self.onmessage = function (message) {
 
   Module._free(s);
   Module.ccall("free_fontstack", "number", ["number"], [fontstack_ptr]);
+
+  self.postMessage({ stackId, done: true });
 };

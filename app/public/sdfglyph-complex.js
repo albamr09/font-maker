@@ -1289,11 +1289,11 @@ function updateGlobalBufferAndViews(buf) {
 }
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 5346032,
+    STACK_BASE = 5346096,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 103152,
-    DYNAMIC_BASE = 5346032,
-    DYNAMICTOP_PTR = 102992;
+    STACK_MAX = 103216,
+    DYNAMIC_BASE = 5346096,
+    DYNAMICTOP_PTR = 103056;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -1711,7 +1711,7 @@ function createExportWrapper(name, fixedasm) {
   };
 }
 
-var wasmBinaryFile = 'sdfglyph.wasm';
+var wasmBinaryFile = 'sdfglyph-complex.wasm';
 if (!isDataURI(wasmBinaryFile)) {
   wasmBinaryFile = locateFile(wasmBinaryFile);
 }
@@ -1855,7 +1855,7 @@ var ASM_CONSTS = {
 
 
 
-// STATICTOP = STATIC_BASE + 102128;
+// STATICTOP = STATIC_BASE + 102192;
 /* global initializers */  __ATINIT__.push({ func: function() { ___wasm_call_ctors() } });
 
 
@@ -4474,7 +4474,7 @@ var ASM_CONSTS = {
     }
 
   function _emscripten_get_sbrk_ptr() {
-      return 102992;
+      return 103056;
     }
 
   
@@ -4709,10 +4709,13 @@ var asm = createWasm();
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
 
 /** @type {function(...*):?} */
-var _generate_glyph_buffer = Module["_generate_glyph_buffer"] = createExportWrapper("generate_glyph_buffer");
+var _generate_unicode_buffer = Module["_generate_unicode_buffer"] = createExportWrapper("generate_unicode_buffer");
 
 /** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
+
+/** @type {function(...*):?} */
+var _generate_glyph_buffer = Module["_generate_glyph_buffer"] = createExportWrapper("generate_glyph_buffer");
 
 /** @type {function(...*):?} */
 var _create_fontstack = Module["_create_fontstack"] = createExportWrapper("create_fontstack");
@@ -4728,6 +4731,9 @@ var _free = Module["_free"] = createExportWrapper("free");
 
 /** @type {function(...*):?} */
 var _fontstack_name = Module["_fontstack_name"] = createExportWrapper("fontstack_name");
+
+/** @type {function(...*):?} */
+var _fontstack_face_num_glyphs = Module["_fontstack_face_num_glyphs"] = createExportWrapper("fontstack_face_num_glyphs");
 
 /** @type {function(...*):?} */
 var _glyph_buffer_data = Module["_glyph_buffer_data"] = createExportWrapper("glyph_buffer_data");

@@ -1,4 +1,4 @@
-import type { AppState, FontFileTreeItem, MapConfig, RenderedGlyphs } from '../../types/types.js';
+import type { AppMode, AppState, FontFileTreeItem, MapConfig, RenderedGlyphs } from '../../types/types.js';
 import { AppStatus } from '../../types/types.js';
 import { DEFAULT_FONT } from '../../data/data.js';
 import { isStackConverted, resetFontStack } from './utilities.js';
@@ -7,20 +7,25 @@ import { isStackConverted, resetFontStack } from './utilities.js';
 export type AppAction =
     | { type: 'addFontStacks'; stacks: FontFileTreeItem[]; }
     | { type: 'setFontStacks'; stacks: FontFileTreeItem[]; modifiedStackIds?: string[]; }
+    | { type: 'setMode'; mode: AppMode; }
+    | { type: 'reset'; }
     | { type: 'startConversion'; toConvert: FontFileTreeItem[]; }
     | { type: 'updateConversionStatus'; data: WebWorkerDataPackage; }
     | { type: 'updateMapConfig'; changes: Partial<MapConfig>; };
 
 export interface WebWorkerDataPackage {
     stackId: string;
-    stackName: string;
-    glyph: RenderedGlyphs;
+    stackName?: string;
+    glyph?: RenderedGlyphs;
+    total?: number; // total number of .pbf files this stack will produce
+    done?: boolean; // final message: the worker has finished this stack
 }
 
 
 export const initialState: AppState = {
     stacks: [],
     status: AppStatus.Ready,
+    mode: 'normal',
     config: {
         font: DEFAULT_FONT,
         fontSize: 14,
@@ -62,6 +67,29 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             };
         }
 
+        case 'setMode': {
+            if (action.mode === state.mode) {
+                return state;
+            }
+            // switching modes starts from a clean slate
+            return {
+                ...state,
+                mode: action.mode,
+                status: AppStatus.Ready,
+                stacks: [],
+                config: { ...state.config, font: DEFAULT_FONT },
+            };
+        }
+
+        case 'reset': {
+            return {
+                ...state,
+                status: AppStatus.Ready,
+                stacks: [],
+                config: { ...state.config, font: DEFAULT_FONT },
+            };
+        }
+
         case 'startConversion': {
             return {
                 ...state,
@@ -70,7 +98,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
                     : AppStatus.Finished,
                 stacks: state.stacks.map(stack => {
                     if (action.toConvert.includes(stack)) {
-                        return { ...stack, data: { ...stack.data, glyphs: [] } };
+                        return { ...stack, data: { ...stack.data, glyphs: [], complete: false } };
                     }
                     return stack;
                 }),
@@ -78,14 +106,20 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         }
 
         case 'updateConversionStatus': {
-            const { stackId, stackName, glyph } = action.data;
+            const { stackId, stackName, glyph, total, done } = action.data;
             let setAsNewActiveFont = false;
             const updatedStacks = state.stacks.map(stack => {
                 if (stack.id === stackId) {
-                    const glyphs = [...stack.data.glyphs!, glyph];
+                    const glyphs = glyph ? [...stack.data.glyphs!, glyph] : stack.data.glyphs;
                     const updated = {
                         ...stack,
-                        data: { ...stack.data, stackName, glyphs },
+                        data: {
+                            ...stack.data,
+                            stackName: stackName ?? stack.data.stackName,
+                            glyphs,
+                            total: total ?? stack.data.total,
+                            complete: done ? true : stack.data.complete,
+                        },
                     };
                     setAsNewActiveFont = isStackConverted(updated);
                     return updated;
@@ -94,7 +128,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             });
             return {
                 ...state,
-                status: updatedStacks.every(isStackConverted)
+                status: updatedStacks.length && updatedStacks.every(isStackConverted)
                     ? AppStatus.Finished
                     : AppStatus.Running,
                 stacks: updatedStacks,

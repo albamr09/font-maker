@@ -1,0 +1,100 @@
+.ComplexSection {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 3);
+}
+
+.Hint {
+    margin: 0;
+    font-size: var(--font-small, 0.85rem);
+    color: var(--muted-color, inherit);
+}
+
+.SelectAll {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing);
+    font-size: var(--font-small, 0.85rem);
+    cursor: pointer;
+}
+
+.FontList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.FontItem {
+    padding: calc(var(--spacing) * 2);
+
+    &:not(:last-child) {
+        border-bottom: 1px solid var(--border-color);
+    }
+}
+
+.FontRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing);
+}
+
+.FontLabel {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing);
+    cursor: pointer;
+}
+
+.FontName {
+    font-weight: 500;
+}
+
+.FontStatus {
+    font-size: var(--font-small, 0.85rem);
+    color: var(--muted-color, inherit);
+    font-variant-numeric: tabular-nums;
+}
+
+.ProgressTrack {
+    margin-top: var(--spacing);
+    height: 4px;
+    border-radius: 2px;
+    background-color: var(--border-color);
+    overflow: hidden;
+}
+
+.ProgressBar {
+    height: 100%;
+    border-radius: 2px;
+    background-color: var(--primary);
+    transition: width var(--transition);
+
+    &.done {
+        background-color: var(--success, var(--primary));
+    }
+}
+
+.Actions {
+    display: flex;
+    gap: var(--spacing);
+}
+
+.ActionButton {
+    flex: 1;
+    padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+    font-size: var(--font-large);
+    font-weight: 600;
+
+    &.loading {
+        opacity: 0.8;
+    }
+}
+
+.ResetButton {
+    padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+    font-weight: 600;
+}

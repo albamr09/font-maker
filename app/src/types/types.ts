@@ -7,9 +7,12 @@ export enum AppStatus {
     Finished = 'Finished',
 }
 
+export type AppMode = 'normal' | 'complex';
+
 export interface AppState {
     stacks: FontFileTreeItem[];
     status: AppStatus;
+    mode: AppMode;
     config: MapConfig;
 }
 
@@ -42,7 +45,9 @@ export interface RenderedGlyphs {
 export interface FontFileData {
     file: File; // .otf,.ttf file
     stackName?: string;
-    glyphs?: RenderedGlyphs[]; // 256 .pbf files
+    glyphs?: RenderedGlyphs[]; // generated .pbf files
+    total?: number; // expected number of .pbf files (known once the worker starts)
+    complete?: boolean; // set once the worker signals it is done with this stack
 }
 
 export type FontFileTreeItem = TreeItem<FontFileData>;

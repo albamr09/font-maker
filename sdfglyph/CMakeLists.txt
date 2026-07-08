@@ -16,7 +16,16 @@ include_directories(vendor/protozero/include)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
-add_executable(font-maker main.cpp)
-target_link_libraries(font-maker ${FREETYPE_LIBRARIES})
+set(SDFGLYPH_SHARED_SOURCES
+    src/glyph_encode.cpp
+    src/fontstack.cpp
+    src/unicode_range.cpp
+    src/complex_range.cpp)
 
+add_executable(font-maker main.cpp ${SDFGLYPH_SHARED_SOURCES})
+target_link_libraries(font-maker ${FREETYPE_LIBRARIES})
 set_property(TARGET font-maker PROPERTY CXX_STANDARD 17)
+
+add_executable(complex-font-maker complex-scripts.cpp ${SDFGLYPH_SHARED_SOURCES})
+target_link_libraries(complex-font-maker ${FREETYPE_LIBRARIES})
+set_property(TARGET complex-font-maker PROPERTY CXX_STANDARD 17)
