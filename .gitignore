@@ -5,3 +5,4 @@ CMakeCache.txt
 *.pbf
 font-maker
 fonts/*
+.DS_Store

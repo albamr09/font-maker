@@ -36,6 +36,8 @@ Use the CLI inside the container
 docker-compose run --rm --remove-orphans cli
 ```
 
+You can convert all your fonts on your local `fonts` folder from inside the container as follows:
+
 ```bash
-./font-maker --name "Noto Sans" fonts/$OUTPUT_FOLDER fonts/$FONT_PATH.ttf
+./font-maker --name "Noto Sans" fonts/$OUTPUT_FOLDER fonts/$FONT_PATH_1.ttf fonts/$FONT_PATH_2.ttf
 ```
