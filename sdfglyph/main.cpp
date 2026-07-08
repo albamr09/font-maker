@@ -14,19 +14,16 @@
 #endif
 #include <iostream>
 
+constexpr uint32_t COMPLEX_GLYPH_OFFSET = 0x10000; // 65536
+
 using namespace std;
 
-void do_glyph(protozero::pbf_writer &parent, std::vector<FT_Face> &faces,
-              FT_UInt glyph_id) {
-
-  for (auto const &face : faces) {
-
-    // Skip glyph IDs that don't exist in this face.
-    if (glyph_id >= static_cast<FT_UInt>(face->num_glyphs))
-      continue;
-
+void do_codepoint(protozero::pbf_writer &parent, FT_Face &face,
+                  FT_ULong char_code) {
+  FT_UInt char_index = FT_Get_Char_Index(face, char_code);
+  if (char_index > 0) {
     sdf_glyph_foundry::glyph_info glyph;
-    glyph.glyph_index = glyph_id;
+    glyph.glyph_index = char_index;
     sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, face);
 
     std::string glyph_data;
@@ -37,10 +34,14 @@ void do_glyph(protozero::pbf_writer &parent, std::vector<FT_Face> &faces,
     glyph_message.add_uint32(4, glyph.height);
     glyph_message.add_sint32(5, glyph.left);
 
-    // IMPORTANT:
-    // The glyph ID stored in the PBF is now the FONT GLYPH ID,
-    // not the Unicode code point.
-    glyph_message.add_uint32(1, glyph_id);
+    // conversions requiring checks, for safety and correctness
+
+    // shortening conversion
+    if (char_code > numeric_limits<uint32_t>::max()) {
+      throw runtime_error("Invalid value for char_code: too large");
+    } else {
+      glyph_message.add_uint32(1, static_cast<uint32_t>(char_code));
+    }
 
     // node-fontnik uses glyph.top - glyph.ascender, assuming that the
     // baseline will be based on the ascender. However, Mapbox/MapLibre
@@ -65,32 +66,110 @@ void do_glyph(protozero::pbf_writer &parent, std::vector<FT_Face> &faces,
     if (glyph.width > 0) {
       glyph_message.add_bytes(2, glyph.bitmap);
     }
-
     parent.add_message(3, glyph_data);
     return;
   }
 }
 
-std::string do_range(std::vector<FT_Face> &faces, std::string name,
-                     unsigned start, unsigned end) {
+void do_glyph(protozero::pbf_writer &parent, FT_Face &face, FT_UInt glyph_id) {
 
-  std::string fontstack_data;
+  // Skip glyph IDs that don't exist in this face.
+  if (glyph_id >= static_cast<FT_UInt>(face->num_glyphs))
+    return;
+
+  sdf_glyph_foundry::glyph_info glyph;
+  glyph.glyph_index = glyph_id;
+  sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, face);
+
+  std::string glyph_data;
+  protozero::pbf_writer glyph_message{glyph_data};
+
+  // direct type conversions, no need for checking or casting
+  glyph_message.add_uint32(3, glyph.width);
+  glyph_message.add_uint32(4, glyph.height);
+  glyph_message.add_sint32(5, glyph.left);
+
+  // IMPORTANT:
+  // The glyph ID stored in the PBF is now the FONT GLYPH ID + offset,
+  // not the Unicode code point.
+  glyph_message.add_uint32(1, COMPLEX_GLYPH_OFFSET + glyph_id);
+
+  // node-fontnik uses glyph.top - glyph.ascender, assuming that the
+  // baseline will be based on the ascender. However, Mapbox/MapLibre
+  // shaping assumes a baseline calibrated on DIN Pro w/ ascender of ~25 at
+  // 24pt
+  int32_t top = glyph.top - 25;
+  if (top < numeric_limits<int32_t>::min() ||
+      top > numeric_limits<int32_t>::max()) {
+    throw runtime_error("Invalid value for glyph.top-25");
+  } else {
+    glyph_message.add_sint32(6, top);
+  }
+
+  // double to uint
+  if (glyph.advance < numeric_limits<uint32_t>::min() ||
+      glyph.advance > numeric_limits<uint32_t>::max()) {
+    throw runtime_error("Invalid value for glyph.top-glyph.ascender");
+  } else {
+    glyph_message.add_uint32(7, static_cast<uint32_t>(glyph.advance));
+  }
+
+  if (glyph.width > 0) {
+    glyph_message.add_bytes(2, glyph.bitmap);
+  }
+
+  parent.add_message(3, glyph_data);
+  return;
+}
+
+std::string do_unicode_range(FT_Face &face, std::string name, unsigned start,
+                             unsigned end) {
+  string fontstack_data;
   {
     protozero::pbf_writer fontstack{fontstack_data};
 
     fontstack.add_string(1, name);
-    fontstack.add_string(2, std::to_string(start) + "-" + std::to_string(end));
+    fontstack.add_string(2, to_string(start) + "-" + to_string(end));
 
-    for (unsigned gid = start; gid <= end; ++gid) {
-      do_glyph(fontstack, faces, gid);
+    for (unsigned x = start; x <= end; x++) {
+      FT_ULong char_code = x;
+      do_codepoint(fontstack, face, x);
     }
   }
 
-  std::string glyphs_data;
+  string glyphs_data;
   {
     protozero::pbf_writer glyphs{glyphs_data};
     glyphs.add_message(1, fontstack_data);
   }
+  return glyphs_data;
+}
+
+std::string do_glyph_range(FT_Face &face, std::string name,
+                           uint32_t startGlyph) {
+  std::string fontstack_data;
+
+  {
+    protozero::pbf_writer fontstack(fontstack_data);
+
+    uint32_t start = COMPLEX_GLYPH_OFFSET + startGlyph;
+
+    uint32_t end = start + 255;
+
+    fontstack.add_string(1, name);
+    fontstack.add_string(2, std::to_string(start) + "-" + std::to_string(end));
+
+    for (uint32_t gid = startGlyph;
+         gid < startGlyph + 256 && gid < face->num_glyphs; gid++) {
+      do_glyph(fontstack, face, gid);
+    }
+  }
+
+  std::string glyphs_data;
+
+  protozero::pbf_writer glyphs(glyphs_data);
+  glyphs.add_message(1, fontstack_data);
+
   return glyphs_data;
 }
 
@@ -184,9 +263,21 @@ char *fontstack_name(fontstack *f) {
   return fname;
 }
 
-glyph_buffer *generate_glyph_buffer(fontstack *f, uint32_t start_glyph) {
+glyph_buffer *generate_unicode_buffer(fontstack *f, uint32_t start_codepoint) {
+  string result = do_unicode_range(f->faces->at(0), *f->name, start_codepoint,
+                                   start_codepoint + 255);
 
-  string result = do_range(*f->faces, *f->name, start_glyph, start_glyph + 255);
+  glyph_buffer *g = (glyph_buffer *)malloc(sizeof(glyph_buffer));
+  char *result_ptr = (char *)malloc(result.size());
+  result.copy(result_ptr, result.size());
+  g->data = result_ptr;
+  g->size = result.size();
+  return g;
+}
+
+glyph_buffer *generate_glyph_buffer(fontstack *f, uint32_t start_codepoint) {
+  string result = do_glyph_range(f->faces->at(1), *f->name, start_codepoint);
+
   glyph_buffer *g = (glyph_buffer *)malloc(sizeof(glyph_buffer));
   char *result_ptr = (char *)malloc(result.size());
   result.copy(result_ptr, result.size());
@@ -255,13 +346,11 @@ int main(int argc, char *argv[]) {
 
   ghc::filesystem::create_directory(output_dir + "/" + fname);
 
-  FT_Long maxGlyphs = 0;
-  for (auto face : *f->faces) {
-    maxGlyphs = std::max(maxGlyphs, face->num_glyphs);
-  }
+  std::cout << "Generating unicode indexed glyphs" << std::endl;
 
-  for (FT_UInt i = 0; i < static_cast<FT_UInt>(maxGlyphs); i += 256) {
-    glyph_buffer *g = generate_glyph_buffer(f, i);
+  // Unicode based indexing (for latin scripts)
+  for (int i = 0; i < 65536; i += 256) {
+    glyph_buffer *g = generate_unicode_buffer(f, i);
     char *data = glyph_buffer_data(g);
     uint32_t buffer_size = glyph_buffer_size(g);
 
@@ -275,6 +364,37 @@ int main(int argc, char *argv[]) {
     std::cout << "Wrote " << outname << std::endl;
 
     free_glyph_buffer(g);
+  }
+
+  std::cout << "Generating glyph indexed glyphs" << std::endl;
+
+  // Glyph based indexing (for complex scripts)
+  if (f->faces->size() > 1) {
+    FT_Face complexFace = f->faces->at(1);
+
+    for (FT_UInt gid = 0; gid < static_cast<FT_UInt>(complexFace->num_glyphs);
+         gid += 256) {
+      glyph_buffer *g = generate_glyph_buffer(f, gid);
+
+      char *data = glyph_buffer_data(g);
+      uint32_t buffer_size = glyph_buffer_size(g);
+
+      uint32_t start = COMPLEX_GLYPH_OFFSET + gid;
+      uint32_t end = start + 255;
+
+      std::ofstream output;
+      std::string outname = output_dir + "/" + fname + "/" +
+                            std::to_string(start) + "-" + std::to_string(end) +
+                            ".pbf";
+
+      output.open(outname);
+      output.write(data, buffer_size);
+      output.close();
+
+      std::cout << "Wrote " << outname << std::endl;
+
+      free_glyph_buffer(g);
+    }
   }
 
   free_fontstack(f);
