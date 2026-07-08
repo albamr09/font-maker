@@ -16,10 +16,10 @@ Create the image:
 docker build -f Dockerfile.wasm -t font-maker-wasm --platform linux/amd64 .
 ```
 
-Compile the library to wasm:
+Compile the library to WASM:
 
 ```bash
-docker run --rm --platform linux/amd64 -v "$(pwd):/app" font-maker-wasm
+docker run --rm --platform linux/amd64 -v "$(pwd)/app/public:/app/output" font-maker-wasm
 ```
 
 This generates the `.wasm` and `.js` inside `app/public/`

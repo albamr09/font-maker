@@ -1,12 +1,12 @@
 [submodule "vendor/sdf-glyph-foundry"]
-	path = sdfglyph/sdf-glyph-foundry
+	path = sdfglyph/vendor/sdf-glyph-foundry
 	url = https://github.com/mapbox/sdf-glyph-foundry.git
 [submodule "vendor/filesystem"]
-	path = sdfglyph/filesystem
+	path = sdfglyph/vendor/filesystem
 	url = https://github.com/gulrak/filesystem.git
 [submodule "vendor/cxxopts"]
-	path = sdfglyph/cxxopts
+	path = sdfglyph/vendor/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
 [submodule "vendor/protozero"]
-	path = sdfglyph/protozero
+	path = sdfglyph/vendor/protozero
 	url = https://github.com/mapbox/protozero.git
