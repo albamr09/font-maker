@@ -14,14 +14,14 @@ export const COMPLEX_BASE_FONT: ComplexFont = {
 // One pbf set is generated per entry, pairing the base font above with each of
 // these complex-script fonts. Files live in app/public/complex/.
 export const COMPLEX_FONTS: ComplexFont[] = [
-    { file: 'complex/NotoSansBengali-Regular.ttf', name: 'Noto Sans Bengali' },
-    { file: 'complex/NotoSansDevanagari-Regular.ttf', name: 'Noto Sans Devanagari' },
-    { file: 'complex/NotoSansGujarati-Regular.ttf', name: 'Noto Sans Gujarati' },
-    { file: 'complex/NotoSansKannada-Regular.ttf', name: 'Noto Sans Kannada' },
-    { file: 'complex/NotoSansMalayalam-Regular.ttf', name: 'Noto Sans Malayalam' },
-    { file: 'complex/NotoSansMyanmar-Regular.ttf', name: 'Noto Sans Myanmar' },
-    { file: 'complex/NotoSansTamil-Regular.ttf', name: 'Noto Sans Tamil' },
-    { file: 'complex/NotoSansTelugu-Regular.ttf', name: 'Noto Sans Telugu' },
+    { file: 'complex/NotoSansBengali-Regular.ttf', name: 'Noto Sans Bengali Regular' },
+    { file: 'complex/NotoSansDevanagari-Regular.ttf', name: 'Noto Sans Devanagari Regular' },
+    { file: 'complex/NotoSansGujarati-Regular.ttf', name: 'Noto Sans Gujarati Regular' },
+    { file: 'complex/NotoSansKannada-Regular.ttf', name: 'Noto Sans Kannada Regular' },
+    { file: 'complex/NotoSansMalayalam-Regular.ttf', name: 'Noto Sans Malayalam Regular' },
+    { file: 'complex/NotoSansMyanmar-Regular.ttf', name: 'Noto Sans Myanmar Regular' },
+    { file: 'complex/NotoSansTamil-Regular.ttf', name: 'Noto Sans Tamil Regular' },
+    { file: 'complex/NotoSansTelugu-Regular.ttf', name: 'Noto Sans Telugu Regular' },
 ];
 
 export const EXAMPLES = [
